@@ -18,18 +18,15 @@ class ClaudeService:
         else:
             self.client = None
 
-        # Initialize cache directory
         self.cache_dir = Path(tempfile.gettempdir()) / "claude_cache"
         self.cache_dir.mkdir(exist_ok=True)
 
     @staticmethod
     def _get_cache_key(image_path: Path, prompt: str) -> str:
         """Generate a cache key based on image content and prompt."""
-        # Read image content for hashing
         with image_path.open("rb") as f:
             image_content = f.read()
 
-        # Create hash of image content + prompt
         content_hash = hashlib.md5(image_content + prompt.encode()).hexdigest()
         return content_hash
 
@@ -101,12 +98,10 @@ class ClaudeService:
         if extension not in settings.supported_formats:
             raise ValueError(f"Unsupported image format: {extension}")
 
-        # Check file size
         file_size_mb = image_path.stat().st_size / (1024 * 1024)
         if file_size_mb > settings.max_file_size_mb:
             raise ValueError(f"Image file too large: {file_size_mb:.1f}MB (max: {settings.max_file_size_mb}MB)")
 
-        # Validate it's actually an image
         try:
             with Image.open(image_path) as img:
                 img.verify()
@@ -160,16 +155,9 @@ class ClaudeService:
         if not self.client:
             raise ValueError("Anthropic API key not configured")
 
-        # Convert string path to Path object
         path_obj = Path(image_path)
-
-        # Validate image
         self._validate_image(path_obj)
-
-        # Generate prompt
         prompt = self._create_extraction_prompt()
-
-        # Check cache first
         cache_key = self._get_cache_key(path_obj, prompt)
         cached_response = self._get_from_cache(cache_key)
 
@@ -179,11 +167,9 @@ class ClaudeService:
 
         print(f"Making API call to Claude for {path_obj.name}")
 
-        # Encode image
         image_base64 = self._encode_image(path_obj)
         media_type = self._get_image_media_type(path_obj)
 
-        # Create the message for Claude (synchronous call)
         message = self.client.messages.create(
             model=settings.claude_model,
             max_tokens=settings.max_tokens,
@@ -210,8 +196,6 @@ class ClaudeService:
         )
 
         response = message.content[0].text
-
-        # Save to cache
         self._save_to_cache(cache_key, response)
 
         return response

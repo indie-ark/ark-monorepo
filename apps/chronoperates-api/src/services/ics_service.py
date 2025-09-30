@@ -25,12 +25,10 @@ class ICSService:
         """
         events = []
 
-        # Check if no events were found
         if "No calendar events detected" in extracted_text:
             return events
 
-        # Split by EVENT: markers
-        event_blocks = extracted_text.split("EVENT:")[1:]  # Skip the first empty part
+        event_blocks = extracted_text.split("EVENT:")[1:]
 
         for block in event_blocks:
             event_data = {}
@@ -46,7 +44,7 @@ class ICSService:
                     if value and value != "Not specified":
                         event_data[key] = value
 
-            if event_data:  # Only add if we have some data
+            if event_data:
                 events.append(event_data)
 
         return events
@@ -64,7 +62,6 @@ class ICSService:
         if not date_str:
             return None
 
-        # Common date formats to try
         date_formats = [
             "%Y-%m-%d",
             "%m/%d/%Y",
@@ -83,7 +80,6 @@ class ICSService:
             except ValueError:
                 continue
 
-        # Try to extract year, month, day with regex
         date_match = re.search(r"(\d{4})-(\d{1,2})-(\d{1,2})", date_str)
         if date_match:
             year, month, day = map(int, date_match.groups())
@@ -104,12 +100,10 @@ class ICSService:
         if not time_str:
             return None
 
-        # Handle 24-hour format
         time_match = re.search(r"(\d{1,2}):(\d{2})", time_str)
         if time_match:
             hour, minute = map(int, time_match.groups())
 
-            # Check for AM/PM
             if "PM" in time_str.upper() and hour != 12:
                 hour += 12
             elif "AM" in time_str.upper() and hour == 12:
@@ -156,17 +150,14 @@ class ICSService:
         """
         event = Event()
 
-        # Required fields
         event.add("uid", f"{datetime.now().isoformat()}@calendar-extractor")
         event.add("dtstamp", datetime.now())
 
-        # Summary (title)
         if "TITLE" in event_data:
             event.add("summary", event_data["TITLE"])
         else:
             event.add("summary", "Extracted Event")
 
-        # Date and time
         start_dt = None
         end_dt = None
 
@@ -181,26 +172,21 @@ class ICSService:
             if start_dt:
                 event.add("dtstart", start_dt)
 
-                # End time
                 if "END_TIME" in event_data:
                     end_dt = self._create_datetime(
                         event_data["DATE"], event_data["END_TIME"]
                     )
                 else:
-                    # Default to 1 hour duration
                     end_dt = start_dt + timedelta(hours=1)
 
                 event.add("dtend", end_dt)
 
-        # Location
         if "LOCATION" in event_data:
             event.add("location", event_data["LOCATION"])
 
-        # Description
         if "DESCRIPTION" in event_data:
             event.add("description", event_data["DESCRIPTION"])
 
-        # Created timestamp
         event.add("created", datetime.now())
 
         return event
@@ -215,22 +201,18 @@ class ICSService:
         Returns:
             Tuple of (ICS content as string, number of events)
         """
-        # Create calendar
         cal = Calendar()
         cal.add("prodid", settings.calendar_prodid)
         cal.add("version", settings.calendar_version)
         cal.add("calscale", "GREGORIAN")
         cal.add("method", "PUBLISH")
 
-        # Parse events from text
         events_data = self._parse_extracted_text(extracted_text)
 
-        # Create ICS events
         for event_data in events_data:
             ics_event = self._create_ics_event(event_data)
             cal.add_component(ics_event)
 
-        # Return ICS content as string
         ics_content = cal.to_ical().decode("utf-8")
         return ics_content, len(events_data)
 
@@ -244,10 +226,8 @@ class ICSService:
         Returns:
             Tuple of (ICS content as string, file path as Path, number of events)
         """
-        # Get ICS content using existing method
         ics_content, events_count = self.create_ics_from_text(extracted_text)
 
-        # Create temporary file
         temp_file = tempfile.NamedTemporaryFile(
             delete=False,
             suffix='.ics',
@@ -256,11 +236,8 @@ class ICSService:
         )
 
         try:
-            # Write ICS content to file
             temp_file.write(ics_content)
             temp_file.flush()
-
-            # Convert to Path object
             file_path = Path(temp_file.name)
 
             return ics_content, file_path, events_count

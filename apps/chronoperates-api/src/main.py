@@ -15,13 +15,12 @@ app = FastAPI(
     version=settings.app_version,
 )
 
-# Add CORS middleware for frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-    ],  # Vite dev server ports
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,17 +48,14 @@ async def upload_image(file: UploadFile = File(...)):
         ProcessImageResponse with ICS content, file path, and metadata
     """
     try:
-        # Validate file type
         if not file.content_type or not file.content_type.startswith("image/"):
             raise HTTPException(
                 status_code=400, detail="File must be an image (JPEG, PNG, BMP, WebP)"
             )
 
-        # Create temporary file to save uploaded image
         with tempfile.NamedTemporaryFile(
             delete=False, suffix=Path(file.filename or "image").suffix
         ) as tmp_file:
-            # Read and save uploaded file
             content = await file.read()
             tmp_file.write(content)
             tmp_file.flush()
@@ -67,10 +63,8 @@ async def upload_image(file: UploadFile = File(...)):
             temp_image_path = tmp_file.name
 
         try:
-            # Extract events from image using Claude
             extracted_text = claude_service.extract_events_from_image(temp_image_path)
 
-            # Convert to ICS format and create file
             ics_content, ics_file_path, events_count = (
                 ics_service.create_ics_file_from_text(extracted_text)
             )
@@ -83,7 +77,6 @@ async def upload_image(file: UploadFile = File(...)):
             )
 
         finally:
-            # Clean up temporary image file
             Path(temp_image_path).unlink(missing_ok=True)
 
     except FileNotFoundError as e:
@@ -143,19 +136,15 @@ async def process_image(request: ProcessImageRequest):
         ProcessImageResponse with ICS content, file path, and metadata
     """
     try:
-        # Extract events from image using Claude (synchronous call)
         extracted_text = claude_service.extract_events_from_image(request.image_path)
 
-        # Convert to ICS format and create file
         ics_content, ics_file_path, events_count = (
             ics_service.create_ics_file_from_text(extracted_text)
         )
 
         return ProcessImageResponse(
             ics_content=ics_content,
-            ics_file_path=str(
-                ics_file_path
-            ),  # Convert Path to string for JSON serialization
+            ics_file_path=str(ics_file_path),
             extracted_text=extracted_text,
             events_found=events_count,
         )

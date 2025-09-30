@@ -28,7 +28,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect }) => {
     maxSize: 10 * 1024 * 1024, // 10MB max
   });
 
-  // Handle paste from clipboard
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
