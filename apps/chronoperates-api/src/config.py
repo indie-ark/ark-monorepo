@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     app_title: str = "Calendar Event Extractor"
     app_description: str = "Extract calendar events from images using Claude LLM"
     app_version: str = "1.0.0"
+    port: int = 8000
+    allowed_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent / ".env"),
