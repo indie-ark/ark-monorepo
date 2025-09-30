@@ -1,12 +1,13 @@
 {
-  "name": "frontend",
+  "name": "@ark/chronoperates-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "test": "echo 'No tests yet'",
+    "lint": "echo 'No lint yet' .",
     "preview": "vite preview"
   },
   "dependencies": {

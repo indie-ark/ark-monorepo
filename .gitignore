@@ -1,1 +1,20 @@
 .idea
+
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+.vite/
+
+# Turborepo
+.turbo/
+
+# Environment
+.env
+.env.local
+.env.*.local

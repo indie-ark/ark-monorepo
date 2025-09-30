@@ -1,0 +1,10 @@
+{
+  "name": "@ark/chronoperates-api",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "uv run python -m pytest tests/",
+    "lint": "echo 'No lint yet'",
+    "build": "echo 'Python project - no build step needed'"
+  }
+}
