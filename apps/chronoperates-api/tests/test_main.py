@@ -54,15 +54,19 @@ class TestMainAPI:
         # Clean up
         temp_path.unlink(missing_ok=True)
 
-    def test_process_image_file_not_found(self, client):
+    @patch("src.services.claude_service.ClaudeService.extract_events_from_image")
+    def test_process_image_file_not_found(self, mock_extract, client):
         """Test handling of non-existent image file."""
+        # Mock to raise FileNotFoundError, bypassing API key check
+        mock_extract.side_effect = FileNotFoundError("Image file not found")
+
         response = client.post(
             "/process_image", json={"image_path": "/nonexistent/path.jpg"}
         )
 
-        assert response.status_code == 404  # Changed from 400 to 404 - FileNotFoundError correctly returns 404
+        assert response.status_code == 404
         detail = response.json()["detail"].lower()
-        assert "not found" in detail or "api key not configured" in detail
+        assert "not found" in detail
 
     def test_process_image_invalid_format(self, client):
         """Test handling of unsupported image format."""
