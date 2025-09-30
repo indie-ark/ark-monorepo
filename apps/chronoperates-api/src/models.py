@@ -8,7 +8,7 @@ class ProcessImageRequest(BaseModel):
     image_path: str = Field(
         ...,
         description="File system path to the image to process",
-        example="/path/to/event_image.jpg",
+        json_schema_extra={"examples": ["/path/to/event_image.jpg"]},
     )
 
 
@@ -18,12 +18,12 @@ class ProcessImageResponse(BaseModel):
     ics_content: str = Field(
         ...,
         description="Generated ICS calendar content",
-        example="BEGIN:VCALENDAR\nVERSION:2.0\n...",
+        json_schema_extra={"examples": ["BEGIN:VCALENDAR\nVERSION:2.0\n..."]},
     )
     ics_file_path: str = Field(
         ...,
         description="Path to the generated ICS file on disk",
-        example="/tmp/events_abc123.ics",
+        json_schema_extra={"examples": ["/tmp/events_abc123.ics"]},
     )
     extracted_text: Optional[str] = Field(
         None, description="Raw text extracted from the image by Claude"

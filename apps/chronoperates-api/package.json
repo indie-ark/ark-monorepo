@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "test": "echo 'No tests yet'",
+    "test": "PYTHONPATH=. uv run python -m pytest tests/ -v",
     "lint": "echo 'No lint yet'",
     "build": "echo 'Python project - no build step needed'"
   }
