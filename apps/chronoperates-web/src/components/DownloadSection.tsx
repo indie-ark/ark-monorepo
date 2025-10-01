@@ -1,5 +1,6 @@
 import React from 'react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../config';
 
 interface DownloadSectionProps {
   icsFileUrl: string;
@@ -16,7 +17,7 @@ const DownloadSection: React.FC<DownloadSectionProps> = ({
 }) => {
   const handleDownload = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`);
+      const response = await fetch(`${API_URL}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`);
 
       if (!response.ok) {
         throw new Error('Failed to download file');

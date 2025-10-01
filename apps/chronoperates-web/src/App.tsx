@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import ImageUpload from './components/ImageUpload';
 import ProcessingStatus from './components/ProcessingStatus';
 import DownloadSection from './components/DownloadSection';
+import { API_URL } from './config';
 import './App.css';
 
 interface AppState {
@@ -44,7 +45,7 @@ function App() {
       const formData = new FormData();
       formData.append('file', state.uploadedImage);
 
-      const response = await fetch('http://localhost:8000/upload-image', {
+      const response = await fetch(`${API_URL}/upload-image`, {
         method: 'POST',
         body: formData,
       });
