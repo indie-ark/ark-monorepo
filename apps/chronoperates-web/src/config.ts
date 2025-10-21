@@ -7,7 +7,17 @@ let config: Config | null = null;
 export async function loadConfig(): Promise<void> {
   try {
     const response = await fetch('/config.json');
-    config = await response.json();
+    const loadedConfig = await response.json();
+
+    // Check if apiUrl is a placeholder (not replaced by entrypoint.sh)
+    if (loadedConfig.apiUrl && loadedConfig.apiUrl.includes('${')) {
+      console.warn('Config contains placeholder, using environment variable');
+      config = {
+        apiUrl: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`
+      };
+    } else {
+      config = loadedConfig;
+    }
   } catch (error) {
     console.warn('Failed to load config.json, using default values', error);
     config = {
