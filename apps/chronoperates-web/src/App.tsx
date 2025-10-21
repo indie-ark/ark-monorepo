@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import ImageUpload from './components/ImageUpload';
 import ProcessingStatus from './components/ProcessingStatus';
 import DownloadSection from './components/DownloadSection';
-import { API_URL } from './config';
+import { getApiUrl } from './config';
 import './App.css';
 
 interface AppState {
@@ -45,7 +45,12 @@ function App() {
       const formData = new FormData();
       formData.append('file', state.uploadedImage);
 
-      const response = await fetch(`${API_URL}/upload-image`, {
+      const apiUrl = getApiUrl();
+      const fullUrl = `${apiUrl}/upload-image`;
+      console.log('[App] API URL:', apiUrl);
+      console.log('[App] Full URL:', fullUrl);
+
+      const response = await fetch(fullUrl, {
         method: 'POST',
         body: formData,
       });
@@ -85,75 +90,67 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="dark min-h-screen flex items-center justify-center p-4 bg-[#09090b] text-zinc-50">
       <Toaster position="top-right" />
 
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Calendar Event Extractor
-          </h1>
-          <p className="text-lg text-gray-600">
-            Upload an image with calendar events and get an ICS file you can import
-          </p>
-        </header>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-[#09090b] border border-zinc-800 rounded-lg p-8 space-y-6">
+          <header className="text-center space-y-2">
+            <h1 className="text-zinc-50">Calendar Event Extractor</h1>
+            <p className="text-zinc-400">
+              Upload an image to extract calendar events
+            </p>
+          </header>
 
-        <div className="max-w-2xl mx-auto">
-          {!state.uploadedImage && !state.icsFileUrl && (
-            <ImageUpload onImageSelect={handleImageSelect} />
-          )}
+          <div className="space-y-6">
+            {!state.uploadedImage && !state.icsFileUrl && (
+              <ImageUpload onImageSelect={handleImageSelect} />
+            )}
 
-          {state.uploadedImage && !state.icsFileUrl && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-4">Selected Image</h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <span className="text-xs text-gray-500">IMG</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{state.uploadedImage.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(state.uploadedImage.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-x-2">
+            {state.uploadedImage && !state.icsFileUrl && (
+              <div className="space-y-4">
+                <div className="border border-border rounded-lg p-6 text-center">
+                  <p className="text-sm font-medium text-card-foreground truncate">
+                    {state.uploadedImage.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">
+                    {(state.uploadedImage.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <div className="flex gap-3 justify-center">
                     <button
                       onClick={handleReset}
-                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                     >
-                      Choose Different
+                      Change
                     </button>
                     <button
                       onClick={handleProcessImage}
                       disabled={state.isProcessing}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      className="px-6 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      Process Image
+                      Process
                     </button>
                   </div>
                 </div>
+
+                {state.isProcessing && <ProcessingStatus />}
+                {state.error && (
+                  <div className="border border-destructive rounded-lg p-4 text-center bg-destructive/10">
+                    <p className="text-sm text-destructive-foreground">{state.error}</p>
+                  </div>
+                )}
               </div>
+            )}
 
-              {state.isProcessing && <ProcessingStatus />}
-              {state.error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600">{state.error}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {state.icsFileUrl && (
-            <DownloadSection
-              icsFileUrl={state.icsFileUrl}
-              eventsFound={state.eventsFound}
-              extractedText={state.extractedText}
-              onReset={handleReset}
-            />
-          )}
+            {state.icsFileUrl && (
+              <DownloadSection
+                icsFileUrl={state.icsFileUrl}
+                eventsFound={state.eventsFound}
+                extractedText={state.extractedText}
+                onReset={handleReset}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
