@@ -20,14 +20,11 @@ export function getApiUrl(): string {
   if (!config) {
     throw new Error('Config not loaded. Call loadConfig() before accessing config values.');
   }
+  console.log('[getApiUrl] Returning:', config.apiUrl);
   return config.apiUrl;
 }
 
-export const API_URL = new Proxy({} as any, {
-  get(_target, prop) {
-    if (prop === Symbol.toPrimitive || prop === 'toString' || prop === 'valueOf') {
-      return () => getApiUrl();
-    }
-    return getApiUrl();
-  }
-}) as string;
+// For testing purposes only
+export function resetConfig(): void {
+  config = null;
+}
