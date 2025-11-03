@@ -13,9 +13,11 @@ libs/                   # Shared libraries (future)
 
 ## Build System
 
-- **Monorepo tool:** Turborepo
-- **Package manager:** npm with workspaces
+- **Monorepo tool:** Turborepo (task orchestration)
+- **Package manager:** npm (independent packages, no workspaces)
 - **CI/CD:** GitHub Actions
+
+Each app is completely independent with its own `package.json`, `package-lock.json`, and `node_modules`. Apps can use different versions of the same packages without conflicts.
 
 ## Commands
 

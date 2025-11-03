@@ -29,16 +29,18 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          cd apps/chronoperates-web && npm ci
 
       - name: Run linting
-        run: npm run lint
+        run: npx turbo run lint --filter="./apps/*"
 
       - name: Run tests
-        run: npm run test
+        run: npx turbo run test --filter="./apps/*"
 
       - name: Run builds
-        run: npm run build
+        run: npx turbo run build --filter="./apps/*"
 
   docker-build-and-release:
     runs-on: ubuntu-latest
