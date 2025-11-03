@@ -13,11 +13,11 @@ libs/                   # Shared libraries (future)
 
 ## Build System
 
-- **Monorepo tool:** Turborepo
-- **Package manager:** npm with workspaces (nested dependencies for complete app isolation)
+- **Monorepo tool:** Turborepo (task orchestration)
+- **Package manager:** npm (independent packages, no workspaces)
 - **CI/CD:** GitHub Actions
 
-Dependencies are configured to be independent per app (no hoisting) via `.npmrc`. Each app maintains its own `node_modules` and can use different versions of the same packages.
+Each app is completely independent with its own `package.json`, `package-lock.json`, and `node_modules`. Apps can use different versions of the same packages without conflicts.
 
 ## Commands
 
