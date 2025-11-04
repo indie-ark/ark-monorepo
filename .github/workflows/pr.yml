@@ -32,6 +32,7 @@ jobs:
         run: |
           npm ci
           cd apps/chronoperates-web && npm ci
+          cd ../chronoperates-mobile && npm ci
 
       - name: Run linting
         run: npx turbo run lint --filter="./apps/*"
