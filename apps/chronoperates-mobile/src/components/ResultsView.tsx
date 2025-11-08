@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as IntentLauncher from 'expo-intent-launcher';
 import Toast from 'react-native-toast-message';
@@ -20,6 +20,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   onReset,
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
 
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -67,30 +68,31 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   };
 
   const handleOpenInCalendar = async () => {
+    setIsOpening(true);
+
     try {
       const apiUrl = getApiUrl();
       const downloadUrl = `${apiUrl}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`;
-
-      // Download first
-      const fileUri = `${FileSystem.Paths.cache}/calendar_events.ics`;
-      const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
-
+      const fileUri = `${FileSystem.cacheDirectory}/calendar_events.ics`;
+      const downiloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
       if (downloadResult.status === 200) {
-        // Try to open with calendar app on Android
+        const contentUri = await FileSystem.getContentUriAsync(downloadResult.uri);
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: downloadResult.uri,
+          data: contentUri,
           type: 'text/calendar',
+          flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
         });
       }
     } catch (error) {
-      console.error('Open calendar error:', error);
-      // Fallback to download/share
+      console.error('Open failed:', error);
       Toast.show({
         type: 'info',
-        text1: 'Unable to open calendar app',
-        text2: 'Downloading file instead',
+        text1: 'Unable to open in Calendar app',
+        text2: 'Try downloading file instead',
       });
       handleDownload();
+    } finally {
+      setIsOpening(false);
     }
   };
 
@@ -112,26 +114,25 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
         <View className="space-y-3 mb-6">
           <TouchableOpacity
-            onPress={handleDownload}
-            disabled={isDownloading}
-            className={`py-4 px-6 rounded-lg ${
-              isDownloading ? 'bg-muted opacity-50' : 'bg-primary active:opacity-80'
+            onPress={handleOpenInCalendar}
+            disabled={isOpening}
+            className={`py-4 px-6 rounded-lg border border-border ${
+              isOpening ? 'bg-primary active:opacity-50' : 'bg-primary active:opacity-80'
             }`}
           >
             <Text className="text-primary-foreground text-center text-base font-medium">
-              {isDownloading ? 'Downloading...' : '📥 Download Calendar File'}
+              {isOpening ? 'Opening...' : '📅 Open in Calendar App'}
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            onPress={handleOpenInCalendar}
+            onPress={handleDownload}
             disabled={isDownloading}
-            className={`py-4 px-6 rounded-lg border border-border ${
-              isDownloading ? 'opacity-50' : 'active:opacity-80'
+            className={`py-4 px-6 rounded-lg ${
+              isDownloading ? 'bg-muted opacity-50' : 'active:opacity-80'
             }`}
           >
             <Text className="text-foreground text-center text-base font-medium">
-              📅 Open in Calendar App
+              {isDownloading ? 'Downloading...' : '📥 Download Calendar File'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -156,18 +157,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           <Text className="text-accent-foreground text-sm mb-1">
             • Google Calendar: Tap "Download" and open the .ics file
           </Text>
-          <Text className="text-accent-foreground text-sm mb-1">
-            • Samsung Calendar: Tap "Open in Calendar App"
-          </Text>
-          <Text className="text-accent-foreground text-sm">
-            • Outlook: Share file to Outlook app
-          </Text>
         </View>
 
         <TouchableOpacity
           onPress={onReset}
-          className="py-4 px-6 rounded-lg border border-border active:opacity-80"
-        >
+          className="py-4 px-6 rounded-lg border border-border active:opacity-80">
           <Text className="text-foreground text-center text-base font-medium">
             Process Another Image
           </Text>
