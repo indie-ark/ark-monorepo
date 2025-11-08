@@ -30,7 +30,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       const downloadUrl = `${apiUrl}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`;
 
       // Download to cache directory
-      const fileUri = `${FileSystem.Paths.cache}/calendar_events.ics`;
+      const fileUri = `${FileSystem.cacheDirectory}calendar_event.ics`;
 
       const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
 
@@ -74,7 +74,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       const apiUrl = getApiUrl();
       const downloadUrl = `${apiUrl}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`;
       const fileUri = `${FileSystem.cacheDirectory}/calendar_events.ics`;
-      const downiloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
+      const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
       if (downloadResult.status === 200) {
         const contentUri = await FileSystem.getContentUriAsync(downloadResult.uri);
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
