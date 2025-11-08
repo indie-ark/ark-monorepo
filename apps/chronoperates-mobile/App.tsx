@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, useColorScheme, BackHandler } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
@@ -155,42 +156,44 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'dark' : ''}`}>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <SafeAreaProvider>
+      <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'dark' : ''}`}>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-      {state.error && !state.isProcessing && (
-        <View className="bg-destructive px-6 py-4 border-b border-destructive">
-          <Text className="text-destructive-foreground text-sm text-center">
-            {state.error}
-          </Text>
-        </View>
-      )}
+        {state.error && !state.isProcessing && (
+          <View className="bg-destructive px-6 py-4 border-b border-destructive">
+            <Text className="text-destructive-foreground text-sm text-center">
+              {state.error}
+            </Text>
+          </View>
+        )}
 
-      {!state.uploadedImage && !state.icsFileUrl && (
-        <ImageInputOptions onImageSelect={handleImageSelect} />
-      )}
+        {!state.uploadedImage && !state.icsFileUrl && (
+          <ImageInputOptions onImageSelect={handleImageSelect} />
+        )}
 
-      {state.uploadedImage && !state.icsFileUrl && !state.isProcessing && (
-        <ImagePreview
-          imageUri={state.uploadedImage}
-          onProcess={handleProcess}
-          onChangeImage={handleReset}
-          isProcessing={state.isProcessing}
-        />
-      )}
+        {state.uploadedImage && !state.icsFileUrl && !state.isProcessing && (
+          <ImagePreview
+            imageUri={state.uploadedImage}
+            onProcess={handleProcess}
+            onChangeImage={handleReset}
+            isProcessing={state.isProcessing}
+          />
+        )}
 
-      {state.isProcessing && <ProcessingStatus />}
+        {state.isProcessing && <ProcessingStatus />}
 
-      {state.icsFileUrl && (
-        <ResultsView
-          icsFileUrl={state.icsFileUrl}
-          eventsFound={state.eventsFound}
-          extractedText={state.extractedText}
-          onReset={handleReset}
-        />
-      )}
+        {state.icsFileUrl && (
+          <ResultsView
+            icsFileUrl={state.icsFileUrl}
+            eventsFound={state.eventsFound}
+            extractedText={state.extractedText}
+            onReset={handleReset}
+          />
+        )}
 
-      <Toast />
-    </SafeAreaView>
+        <Toast />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

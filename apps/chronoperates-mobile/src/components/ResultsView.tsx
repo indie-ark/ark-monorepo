@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as IntentLauncher from 'expo-intent-launcher';
@@ -19,6 +20,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   extractedText,
   onReset,
 }) => {
+  const insets = useSafeAreaInsets();
   const [isSharing, setIsSharing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
 
@@ -84,7 +86,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8">
+      <View className="px-6 py-8" style={{ paddingTop: insets.top + 32 }}>
         <Text className="text-2xl font-semibold text-foreground text-center mb-2">
           ✅ Processing Complete
         </Text>
