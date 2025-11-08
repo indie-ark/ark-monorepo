@@ -19,11 +19,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   extractedText,
   onReset,
 }) => {
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
 
-  const handleDownload = async () => {
-    setIsDownloading(true);
+  const handleShare = async () => {
+    setIsSharing(true);
 
     try {
       const apiUrl = getApiUrl();
@@ -63,7 +63,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         text2: 'Could not download the calendar file',
       });
     } finally {
-      setIsDownloading(false);
+      setIsSharing(false);
     }
   };
 
@@ -90,7 +90,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         text1: 'Unable to open in Calendar app',
         text2: 'Try downloading file instead',
       });
-      handleDownload();
+      handleShare();
     } finally {
       setIsOpening(false);
     }
@@ -125,14 +125,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={handleDownload}
-            disabled={isDownloading}
+            onPress={handleShare}
+            disabled={isSharing}
             className={`py-4 px-6 rounded-lg ${
-              isDownloading ? 'bg-muted opacity-50' : 'active:opacity-80'
+              isSharing ? 'bg-muted opacity-50' : 'active:opacity-80'
             }`}
           >
             <Text className="text-foreground text-center text-base font-medium">
-              {isDownloading ? 'Downloading...' : '📥 Download Calendar File'}
+              {isSharing ? 'Sharing...' : '🔗 Share Calendar File'}
             </Text>
           </TouchableOpacity>
         </View>
