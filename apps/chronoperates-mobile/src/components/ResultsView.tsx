@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as IntentLauncher from 'expo-intent-launcher';
@@ -28,52 +28,36 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     try {
       const apiUrl = getApiUrl();
       const downloadUrl = `${apiUrl}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`;
-
-      // Download to cache directory
       const fileUri = `${FileSystem.cacheDirectory}calendar_event.ics`;
-
       const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
-
-      if (downloadResult.status !== 200) {
-        throw new Error('Failed to download ICS file');
-      }
-
-      Toast.show({
-        type: 'success',
-        text1: 'File downloaded',
-        text2: 'Opening share menu...',
-      });
-
-      // Share the file
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
+      if (downloadResult.status === 200) {
         await Sharing.shareAsync(downloadResult.uri, {
           mimeType: 'text/calendar',
-          dialogTitle: 'Save or open calendar file',
+          dialogTitle: 'Share or save calendar file',
           UTI: 'public.calendar-event',
         });
       } else {
-        Alert.alert('Success', 'Calendar file has been downloaded to cache.');
+        throw new Error(`Failed to download ICS file: ${downloadResult.status}`);
       }
     } catch (error) {
       console.error('Download error:', error);
       Toast.show({
         type: 'error',
-        text1: 'Download failed',
-        text2: 'Could not download the calendar file',
+        text1: 'Sharing failed',
+        text2: 'Could not share the calendar file',
       });
     } finally {
       setIsSharing(false);
     }
   };
 
-  const handleOpenInCalendar = async () => {
+  const handleOpen = async () => {
     setIsOpening(true);
 
     try {
       const apiUrl = getApiUrl();
       const downloadUrl = `${apiUrl}/download-ics?file_path=${encodeURIComponent(icsFileUrl)}`;
-      const fileUri = `${FileSystem.cacheDirectory}/calendar_events.ics`;
+      const fileUri = `${FileSystem.cacheDirectory}calendar_events.ics`;
       const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
       if (downloadResult.status === 200) {
         const contentUri = await FileSystem.getContentUriAsync(downloadResult.uri);
@@ -82,13 +66,15 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           type: 'text/calendar',
           flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
         });
+      } else {
+        throw new Error(`Failed to download ICS file: ${downloadResult.status}`);
       }
     } catch (error) {
       console.error('Open failed:', error);
       Toast.show({
-        type: 'info',
+        type: 'error',
         text1: 'Unable to open in Calendar app',
-        text2: 'Try downloading file instead',
+        text2: 'Try sharing file instead',
       });
       handleShare();
     } finally {
@@ -114,7 +100,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
         <View className="space-y-3 mb-6">
           <TouchableOpacity
-            onPress={handleOpenInCalendar}
+            onPress={handleOpen}
             disabled={isOpening}
             className={`py-4 px-6 rounded-lg border border-border ${
               isOpening ? 'bg-primary active:opacity-50' : 'bg-primary active:opacity-80'
@@ -152,10 +138,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
         <View className="bg-accent/50 rounded-lg p-4 mb-6">
           <Text className="text-accent-foreground text-sm font-medium mb-2">
-            💡 How to Import:
+            💡 How to Use:
           </Text>
           <Text className="text-accent-foreground text-sm mb-1">
-            • Google Calendar: Tap "Download" and open the .ics file
+            • Calendar Apps: Tap "Open in Calendar App" and open the .ics file
+            • Other Apps: Tap "Share Calendar File" to save or share the .ics file
           </Text>
         </View>
 
