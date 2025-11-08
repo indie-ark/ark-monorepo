@@ -141,7 +141,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             💡 How to Use:
           </Text>
           <Text className="text-accent-foreground text-sm mb-1">
-            • Calendar Apps: Tap "Open in Calendar App" and open the .ics file
+            • Calendar Apps: Tap "Open in Calendar App" and open the .ics file{'\n'}
             • Other Apps: Tap "Share Calendar File" to save or share the .ics file
           </Text>
         </View>
