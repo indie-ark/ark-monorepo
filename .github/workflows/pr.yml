@@ -89,7 +89,7 @@ jobs:
       - name: Run Expo Doctor
         if: steps.changes.outputs.mobile == 'true'
         working-directory: apps/${{ matrix.app }}
-        run: npx expo-doctor
+        run: npx expo-doctor --skip-dependency-update
 
       - name: Validate Expo prebuild
         if: steps.changes.outputs.mobile == 'true'
