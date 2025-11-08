@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, useColorScheme } from 'react-native';
+import { SafeAreaView, View, Text, useColorScheme, BackHandler } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
@@ -47,6 +47,20 @@ export default function App() {
       subscription.remove();
     };
   }, []);
+
+  // Handle Android back button
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // If we're on the results screen or image preview, go back to start
+      if (state.icsFileUrl || state.uploadedImage) {
+        handleReset();
+        return true; // Prevent default behavior (exit app)
+      }
+      return false; // Allow default behavior (exit app) on first screen
+    });
+
+    return () => backHandler.remove();
+  }, [state.icsFileUrl, state.uploadedImage]);
 
   const handleImageSelect = (imageUri: string) => {
     setState({
