@@ -43,6 +43,70 @@ jobs:
       - name: Run builds
         run: npx turbo run build --filter="./apps/*"
 
+  mobile-validation:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    strategy:
+      matrix:
+        app: [chronoperates-mobile]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for mobile app changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mobile:
+              - 'apps/${{ matrix.app }}/**'
+
+      - name: Setup Node.js
+        if: steps.changes.outputs.mobile == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+
+      - name: Setup Java
+        if: steps.changes.outputs.mobile == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        if: steps.changes.outputs.mobile == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        if: steps.changes.outputs.mobile == 'true'
+        working-directory: apps/${{ matrix.app }}
+        run: npm ci
+
+      - name: Run Expo Doctor
+        if: steps.changes.outputs.mobile == 'true'
+        working-directory: apps/${{ matrix.app }}
+        run: npx expo-doctor
+
+      - name: Validate Expo prebuild
+        if: steps.changes.outputs.mobile == 'true'
+        working-directory: apps/${{ matrix.app }}
+        run: npx expo prebuild --clean --no-install --platform android
+
+      - name: Build JS bundle
+        if: steps.changes.outputs.mobile == 'true'
+        working-directory: apps/${{ matrix.app }}
+        run: npx expo export --platform android
+
+      - name: Run dependency audit
+        if: steps.changes.outputs.mobile == 'true'
+        working-directory: apps/${{ matrix.app }}
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
   docker-build-and-push:
     runs-on: ubuntu-latest
     needs: build-and-test
