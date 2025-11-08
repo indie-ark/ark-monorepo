@@ -15,7 +15,7 @@
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
-    "expo": "~54.0.22",
+    "expo": "^54.0.23",
     "expo-constants": "~18.0.10",
     "expo-file-system": "~19.0.17",
     "expo-image-picker": "~17.0.8",
