@@ -120,12 +120,6 @@ export default function App() {
         eventsFound: data.events_found,
         extractedText: data.extracted_text,
       }));
-
-      Toast.show({
-        type: 'success',
-        text1: 'Success!',
-        text2: `Found ${data.events_found} event${data.events_found === 1 ? '' : 's'}`,
-      });
     } catch (error) {
       console.error('Processing error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
