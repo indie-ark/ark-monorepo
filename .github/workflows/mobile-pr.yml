@@ -43,6 +43,11 @@ jobs:
           ls -la node_modules/.bin || true
           echo "Check local expo binary version (if present):"
           ./node_modules/.bin/expo --version || true
+          # If the expo binary is missing in CI, install locally (no-save) so prebuild can run
+          if [ ! -x "node_modules/.bin/expo" ]; then
+            echo "expo binary not found — installing @expo/cli and expo locally"
+            npm install --no-save @expo/cli expo
+          fi
           echo "Running expo prebuild via npm script (original script has --no-install):"
           npm run validate:config --silent
 
