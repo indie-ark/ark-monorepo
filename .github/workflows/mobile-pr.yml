@@ -36,7 +36,15 @@ jobs:
 
       - name: Generate Android project
         working-directory: apps/chronoperates-mobile
-        run: npm run validate:config --silent
+        run: |
+          echo "node & npm versions:"
+          node -v && npm -v
+          echo "Listing node_modules/.bin (shows if expo binary is present):"
+          ls -la node_modules/.bin || true
+          echo "Check local expo binary version (if present):"
+          ./node_modules/.bin/expo --version || true
+          echo "Running expo prebuild via npm script (original script has --no-install):"
+          npm run validate:config --silent
 
       - name: Build debug APK
         working-directory: apps/chronoperates-mobile/android
