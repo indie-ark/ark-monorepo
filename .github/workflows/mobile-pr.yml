@@ -21,7 +21,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: apps/chronoperates-mobile
-        run: npm ci
+        env:
+          NPM_CONFIG_PRODUCTION: 'false'
+        run: npm ci --include=dev
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -34,7 +36,7 @@ jobs:
 
       - name: Generate Android project
         working-directory: apps/chronoperates-mobile
-        run: npx expo prebuild --platform android --clean
+        run: npm run validate:config --silent
 
       - name: Build debug APK
         working-directory: apps/chronoperates-mobile/android
