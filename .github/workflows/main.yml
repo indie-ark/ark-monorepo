@@ -75,7 +75,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  build-mobile-apk:
+  mobile-apk-build-release:
     runs-on: ubuntu-latest
     needs: build-and-test
     strategy:

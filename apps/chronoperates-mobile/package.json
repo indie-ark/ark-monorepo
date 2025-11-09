@@ -12,7 +12,8 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "doctor": "expo-doctor"
   },
   "dependencies": {
     "expo": "^54.0.23",
@@ -43,6 +44,7 @@
     "eslint": "^9.19.0",
     "eslint-config-expo": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
+    "expo-doctor": "^1.17.11",
     "jest": "^29.7.0",
     "jest-expo": "~54.0.2",
     "typescript": "~5.9.2"

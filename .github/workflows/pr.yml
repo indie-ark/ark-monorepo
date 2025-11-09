@@ -43,7 +43,7 @@ jobs:
       - name: Run builds
         run: npx turbo run build --filter="./apps/*"
 
-  mobile-validation:
+  mobile-prebuild:
     runs-on: ubuntu-latest
     needs: build-and-test
     strategy:
@@ -89,7 +89,7 @@ jobs:
       - name: Run Expo Doctor
         if: steps.changes.outputs.mobile == 'true'
         working-directory: apps/${{ matrix.app }}
-        run: npx expo-doctor
+        run: npm run doctor
         continue-on-error: true
 
       - name: Validate Expo prebuild
