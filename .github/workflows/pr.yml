@@ -86,21 +86,15 @@ jobs:
         working-directory: apps/${{ matrix.app }}
         run: npm ci
 
-      - name: Run Expo Doctor
+      - name: Build JS bundle
         if: steps.changes.outputs.mobile == 'true'
         working-directory: apps/${{ matrix.app }}
-        run: npm run doctor
-        continue-on-error: true
+        run: npm run validate:bundle
 
       - name: Validate Expo prebuild
         if: steps.changes.outputs.mobile == 'true'
         working-directory: apps/${{ matrix.app }}
-        run: npx expo prebuild --clean --no-install --platform android
-
-      - name: Build JS bundle
-        if: steps.changes.outputs.mobile == 'true'
-        working-directory: apps/${{ matrix.app }}
-        run: npx expo export --platform android
+        run: npm run validate:config
 
       - name: Run dependency audit
         if: steps.changes.outputs.mobile == 'true'

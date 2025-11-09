@@ -13,7 +13,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
-    "doctor": "expo-doctor"
+    "validate:bundle": "expo export --platform android",
+    "validate:config": "expo prebuild --clean --no-install --platform android"
   },
   "dependencies": {
     "expo": "^54.0.23",
