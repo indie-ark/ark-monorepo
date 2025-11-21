@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Chronoperates",
+    "slug": "chronoperates-mobile",
+    "scheme": "chronoperates",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090b"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.indieark.chronoperates"
+    },
+    "android": {
+      "package": "com.indieark.chronoperates",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#09090b"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
+      "intentFilters": [
+        {
+          "action": "SEND",
+          "category": ["DEFAULT"],
+          "data": {
+            "mimeType": "image/*"
+          }
+        }
+      ],
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Chronoperates to access your photos to upload calendar images.",
+          "cameraPermission": "Allow Chronoperates to use your camera to capture calendar images."
+        }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsImageWithMaxCount": 1
+          },
+          "androidIntentFilters": ["image/*"]
+        }
+      ]
+    ]
+  }
+}

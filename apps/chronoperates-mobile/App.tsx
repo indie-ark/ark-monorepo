@@ -1,0 +1,204 @@
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, Text, useColorScheme, BackHandler } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useShareIntent } from 'expo-share-intent';
+import Toast from 'react-native-toast-message';
+import { loadConfig, getApiUrl } from './src/config';
+import { ImageInputOptions } from './src/components/ImageInputOptions';
+import { ImagePreview } from './src/components/ImagePreview';
+import { ProcessingStatus } from './src/components/ProcessingStatus';
+import { ResultsView } from './src/components/ResultsView';
+import { AppState, ApiResponse, ApiError } from './src/types';
+import './global.css';
+
+const API_TIMEOUT_MS = 20000;
+
+interface FileUpload {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+export default function App() {
+  const colorScheme = useColorScheme();
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
+
+  const [state, setState] = useState<AppState>({
+    uploadedImage: null,
+    isProcessing: false,
+    error: null,
+    icsFileUrl: null,
+    eventsFound: 0,
+    extractedText: null,
+  });
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  // Handle incoming share intents
+  useEffect(() => {
+    if (hasShareIntent && shareIntent?.files?.[0]?.path) {
+      const imageUri = shareIntent.files[0].path;
+      console.log('Received shared image:', imageUri);
+      handleImageSelect(imageUri);
+      resetShareIntent();
+      Toast.show({
+        type: 'success',
+        text1: 'Image received',
+        text2: 'Ready to process',
+      });
+    }
+  }, [hasShareIntent, shareIntent]);
+
+  // Handles Android back button
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // If we're on the results screen or image preview, go back to start
+      if (state.icsFileUrl || state.uploadedImage) {
+        handleReset();
+        return true; // Prevent default behavior (exit app)
+      }
+      return false; // Allow default behavior (exit app) on first screen
+    });
+
+    return () => backHandler.remove();
+  }, [state.icsFileUrl, state.uploadedImage]);
+
+  const handleImageSelect = (imageUri: string) => {
+    setState({
+      uploadedImage: imageUri,
+      isProcessing: false,
+      error: null,
+      icsFileUrl: null,
+      eventsFound: 0,
+      extractedText: null,
+    });
+  };
+
+  const handleProcess = async () => {
+    if (!state.uploadedImage) return;
+
+    setState((prev) => ({ ...prev, isProcessing: true, error: null }));
+
+    // Abort request if it takes longer than API_TIMEOUT_MS
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), API_TIMEOUT_MS);
+
+    try {
+      const apiUrl = getApiUrl();
+      const formData = new FormData();
+
+      const uriParts = state.uploadedImage.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+
+      formData.append('file', {
+        uri: state.uploadedImage,
+        name: `photo.${fileType}`,
+        type: `image/${fileType}`,
+      } as FileUpload);
+
+      const response = await fetch(`${apiUrl}/upload-image`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        signal: abortController.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to process image';
+        try {
+          const errorData: ApiError = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch {
+          // Failed to parse error response, use default message
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data: ApiResponse = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        isProcessing: false,
+        icsFileUrl: data.ics_file_path,
+        eventsFound: data.events_found,
+        extractedText: data.extracted_text,
+      }));
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('Processing error:', error);
+
+      let errorMessage = 'Failed to process image';
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = `Request timed out after ${API_TIMEOUT_MS / 1000} seconds`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setState((prev) => ({
+        ...prev,
+        isProcessing: false,
+        error: errorMessage,
+      }));
+
+      Toast.show({
+        type: 'error',
+        text1: 'Processing failed',
+        text2: errorMessage,
+      });
+    }
+  };
+
+  const handleReset = () => {
+    setState({
+      uploadedImage: null,
+      isProcessing: false,
+      error: null,
+      icsFileUrl: null,
+      eventsFound: 0,
+      extractedText: null,
+    });
+  };
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'dark' : ''}`}>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+
+        {!state.uploadedImage && !state.icsFileUrl && (
+          <ImageInputOptions onImageSelect={handleImageSelect} />
+        )}
+
+        {state.uploadedImage && !state.icsFileUrl && !state.isProcessing && (
+          <ImagePreview
+            imageUri={state.uploadedImage}
+            onProcess={handleProcess}
+            onChangeImage={handleReset}
+            isProcessing={state.isProcessing}
+          />
+        )}
+
+        {state.isProcessing && <ProcessingStatus />}
+
+        {state.icsFileUrl && (
+          <ResultsView
+            icsFileUrl={state.icsFileUrl}
+            eventsFound={state.eventsFound}
+            extractedText={state.extractedText}
+            onReset={handleReset}
+          />
+        )}
+
+        <Toast />
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
