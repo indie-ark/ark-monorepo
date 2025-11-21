@@ -12,6 +12,8 @@ import { ResultsView } from './src/components/ResultsView';
 import { AppState, ApiResponse, ApiError } from './src/types';
 import './global.css';
 
+const API_TIMEOUT_MS = 20000;
+
 export default function App() {
   const colorScheme = useColorScheme();
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
@@ -75,6 +77,9 @@ export default function App() {
 
     setState((prev) => ({ ...prev, isProcessing: true, error: null }));
 
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), API_TIMEOUT_MS);
+
     try {
       const apiUrl = getApiUrl();
       const formData = new FormData();
@@ -94,7 +99,10 @@ export default function App() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        signal: abortController.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMessage = 'Failed to process image';
@@ -117,8 +125,17 @@ export default function App() {
         extractedText: data.extracted_text,
       }));
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Processing error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
+
+      let errorMessage = 'Failed to process image';
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = `Request timed out after ${API_TIMEOUT_MS / 1000} seconds`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
 
       setState((prev) => ({
         ...prev,
