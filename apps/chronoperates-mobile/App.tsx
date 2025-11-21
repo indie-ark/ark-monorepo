@@ -34,7 +34,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    // Load configuration
     loadConfig();
   }, []);
 
@@ -83,6 +82,7 @@ export default function App() {
 
     setState((prev) => ({ ...prev, isProcessing: true, error: null }));
 
+    // Abort request if it takes longer than API_TIMEOUT_MS
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), API_TIMEOUT_MS);
 
@@ -116,7 +116,7 @@ export default function App() {
           const errorData: ApiError = await response.json();
           errorMessage = errorData.detail || errorMessage;
         } catch {
-          // Use default error message
+          // Failed to parse error response, use default message
         }
         throw new Error(errorMessage);
       }
