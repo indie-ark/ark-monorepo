@@ -14,6 +14,12 @@ import './global.css';
 
 const API_TIMEOUT_MS = 20000;
 
+interface FileUpload {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 export default function App() {
   const colorScheme = useColorScheme();
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
@@ -91,7 +97,7 @@ export default function App() {
         uri: state.uploadedImage,
         name: `photo.${fileType}`,
         type: `image/${fileType}`,
-      } as any);
+      } as FileUpload);
 
       const response = await fetch(`${apiUrl}/upload-image`, {
         method: 'POST',
