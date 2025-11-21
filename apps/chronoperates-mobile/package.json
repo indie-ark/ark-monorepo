@@ -23,6 +23,7 @@
     "expo-image-picker": "~17.0.8",
     "expo-intent-launcher": "~13.0.7",
     "expo-linking": "~8.0.8",
+    "expo-share-intent": "^5.1.0",
     "expo-sharing": "~14.0.7",
     "expo-status-bar": "~3.0.8",
     "nativewind": "^4.2.1",

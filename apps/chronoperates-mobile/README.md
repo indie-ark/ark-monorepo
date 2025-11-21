@@ -16,20 +16,24 @@ React Native + Expo mobile application for extracting calendar events from image
 
 - Node.js 18+
 - npm or yarn
-- Expo CLI: `npm install -g expo-cli`
 - **For Android:**
   - Android Studio
-  - Android SDK (API 34+)
+  - Android SDK (API 35+)
   - Android Emulator or physical device
 - **For iOS (macOS only):**
   - Xcode 15+
   - iOS Simulator or physical device
+
+**Note:** Expo CLI is no longer required - Expo now uses `npx` commands directly.
 
 ## Installation
 
 ```bash
 # Install dependencies
 npm install
+
+# Generate native code (required for share intent support)
+npx expo prebuild --clean
 
 # Start Expo development server
 npm run dev
@@ -40,6 +44,8 @@ npm run android
 # Run on iOS (macOS only)
 npm run ios
 ```
+
+**Note:** This app uses native modules (`expo-share-intent`) and requires prebuild. You cannot use Expo Go - you must use a dev client or build the native app.
 
 ## Configuration
 
@@ -108,7 +114,7 @@ The app is configured to receive image shares from other apps on Android:
 3. Select "Chronoperates"
 4. The image will be loaded into the app for processing
 
-This is configured in `app.json` under `android.intentFilters`.
+This uses the `expo-share-intent` package configured in `app.json` plugins.
 
 ## Building for Production
 
@@ -170,8 +176,9 @@ npx expo prebuild --platform ios
 
 ### Share target not appearing (Android)
 
-- Ensure you've run `npx expo prebuild` to generate native Android config
-- Rebuild the app after modifying `app.json` intent filters
+- Ensure you've run `npx expo prebuild --clean` to generate native Android config
+- Rebuild the app after modifying `app.json` plugins or intent filters
+- The app must be fully installed (not just via Expo Go)
 - On some devices, you may need to restart after installation
 
 ### Metro bundler errors
@@ -205,6 +212,7 @@ npm run build
 - **expo-image-picker** - Camera and gallery access
 - **expo-file-system** - File operations
 - **expo-sharing** - Native share functionality
+- **expo-share-intent** - Receive shared images from other apps
 - **react-native-toast-message** - Toast notifications
 
 ## License

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, useColorScheme, BackHandler } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import * as Linking from 'expo-linking';
+import { useShareIntent } from 'expo-share-intent';
 import Toast from 'react-native-toast-message';
 import { loadConfig, getApiUrl } from './src/config';
 import { ImageInputOptions } from './src/components/ImageInputOptions';
@@ -14,6 +14,7 @@ import './global.css';
 
 export default function App() {
   const colorScheme = useColorScheme();
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
 
   const [state, setState] = useState<AppState>({
     uploadedImage: null,
@@ -27,29 +28,24 @@ export default function App() {
   useEffect(() => {
     // Load configuration
     loadConfig();
-
-    // Handle incoming share intents
-    const handleUrl = (event: { url: string }) => {
-      const { url } = event;
-      if (url) {
-        console.log('Received shared URL:', url);
-      }
-    };
-
-    const subscription = Linking.addEventListener('url', handleUrl);
-
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        handleUrl({ url });
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
   }, []);
 
-  // Handle Android back button
+  // Handle incoming share intents
+  useEffect(() => {
+    if (hasShareIntent && shareIntent?.files?.[0]?.path) {
+      const imageUri = shareIntent.files[0].path;
+      console.log('Received shared image:', imageUri);
+      handleImageSelect(imageUri);
+      resetShareIntent();
+      Toast.show({
+        type: 'success',
+        text1: 'Image received',
+        text2: 'Ready to process',
+      });
+    }
+  }, [hasShareIntent, shareIntent]);
+
+  // Handles Android back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       // If we're on the results screen or image preview, go back to start

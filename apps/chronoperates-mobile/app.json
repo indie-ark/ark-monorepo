@@ -2,6 +2,7 @@
   "expo": {
     "name": "Chronoperates",
     "slug": "chronoperates-mobile",
+    "scheme": "chronoperates",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,6 +19,8 @@
     },
     "android": {
       "package": "com.indieark.chronoperates",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#09090b"
@@ -49,6 +52,15 @@
         {
           "photosPermission": "Allow Chronoperates to access your photos to upload calendar images.",
           "cameraPermission": "Allow Chronoperates to use your camera to capture calendar images."
+        }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsImageWithMaxCount": 1
+          },
+          "androidIntentFilters": ["image/*"]
         }
       ]
     ]
