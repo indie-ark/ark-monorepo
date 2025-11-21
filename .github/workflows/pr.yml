@@ -82,9 +82,9 @@ jobs:
         run: |
           npm ci --include=dev
           npm install --no-save @expo/cli expo
-          npm run validate:bundle --silent || true
-          npm run validate:config --silent
-          npm audit --audit-level=high || true
+          npx expo prebuild --clean --no-install
+          npx expo config --type introspect
+          npm audit --audit-level=high
 
   docker-build-and-push:
     runs-on: ubuntu-latest
