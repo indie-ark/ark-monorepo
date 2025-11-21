@@ -113,32 +113,50 @@ class ClaudeService:
     def _create_extraction_prompt(self) -> str:
         """Create the prompt for Claude to extract event information."""
         return """
-        Please analyze this image and extract all calendar event information you can find. Look for:
+        Your task is to view the attached picture(s) and extract calendar event details.
         
-        - Event titles/names
-        - Dates (in any format)
-        - Times (start and end times)
-        - Locations/venues
-        - Descriptions or additional details
-        - Recurring patterns if mentioned
-        - Contact information
-        - Any other event-related information
+        Here are some examples of the picture source:
+        - screenshots of booking confirmations
+        - screenshots of fb event pages
+        - screenshots of instant messages with an invitation
+        - pictures of concert posters on streets
         
-        Format your response as a structured list of events with the following information for each event:
+        Here are some examples of events:
+        - trip (train or flight tickets)
+        - family gathering/meeting friends
+        - a concert or a movie
         
-        EVENT:
-        TITLE: [event title]
-        DATE: [date in YYYY-MM-DD format if possible, otherwise as written]
-        START_TIME: [start time in HH:MM format if available]
-        END_TIME: [end time in HH:MM format if available]
-        LOCATION: [location/venue if mentioned]
-        DESCRIPTION: [any additional details]
-        ---
+        Try to extract all the event related information. Give me:
+        - **Event title/name**: In case of a trip make it like {start}->{destination} ✈️ (always include the transportation emoji: ✈️ for flights, 🚂 for trains, 🚗 for cars, 🚌 for buses, 🚢 for ferries/cruises).
+        - **Description**: Add in plaintext all extracted text. Do not use imperative form of you explaining what you see; rather write directly the event text as it appears in the image.
+        - **Event start location**: Try to infer the real world location (this might be the name of a train station, or an airport, or a restaurant, or any real place with an address). If you find the real world location, infer the local timezone.
+        - **End/destination location**: Specifically for trips there might be an end (or destination) location. Extract the text, and try to identify the real place and timezone.
+        - **Start date and time**: If you know the timezone from the location, add that to the time. For dates, assume the current year (2025) or the next occurrence of that date if the month has already passed (eg if it's January 1st, assume the next January 1st).
+        - **End date and time**: Include timezone if it exists. In some cases the end time is not explicitly stated, but there is a duration. In that case calculate the end time.
         
-        If you cannot find specific information for a field, write "Not specified".
-        If no events are found, respond with "No calendar events detected in this image."
+        **If the image contains multiple separate events** (e.g., outbound and return flights), create separate JSON objects for each event.
         
-        Be thorough and extract everything that could be calendar-related, even if some details are incomplete.
+        I want the results in a JSON (or JSON array if multiple events). I want the fields:
+        
+        - title, description, start_location, start_date, start_time, start_timezone, end_location, end_date, end_time, end_timezone, duration
+        
+        Dates, times, timezones, and durations should be in ISO format. Title, description, and location in plaintext.
+        
+        For every field I want the following properties:
+        
+        - **"value"**: the extracted value. If no value can be extracted, then make it null.
+        - **"source"**: an enum of:
+            - 'direct' if it's directly extracted text visible in the image
+            - 'calculated' if the information doesn't exist directly and you computed it (e.g., end time from start time + duration)
+            - 'inferred' if you deduced it from context (e.g., timezone from airport location, year from current date)
+            - If value is null, this should also be null.
+        - **"confidence"**: a real number 0-100 indicating certainty:
+            - 100: completely certain (directly visible, unambiguous text)
+            - 90-99: very confident (clear inference like timezone from known airport)
+            - 70-89: reasonably confident (calculated values, partial information)
+            - 50-69: uncertain (ambiguous information, multiple interpretations possible)
+            - Below 50: low confidence (heavy assumptions required)
+            - If value is null, confidence should also be null.
         """
 
     def extract_events_from_image(self, image_path: str) -> str:
