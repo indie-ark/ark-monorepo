@@ -167,14 +167,6 @@ export default function App() {
       <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'dark' : ''}`}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-        {state.error && !state.isProcessing && (
-          <View className="bg-destructive px-6 py-4 border-b border-destructive">
-            <Text className="text-destructive-foreground text-sm text-center">
-              {state.error}
-            </Text>
-          </View>
-        )}
-
         {!state.uploadedImage && !state.icsFileUrl && (
           <ImageInputOptions onImageSelect={handleImageSelect} />
         )}
